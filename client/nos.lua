@@ -49,7 +49,7 @@ Citizen.CreateThread(function()
             local Plate = GetVehicleNumberPlateText(CurrentVehicle)
             if VehicleNitrous[Plate] ~= nil then
                 if VehicleNitrous[Plate].hasnitro then
-                    if IsControlJustPressed(0, Keys["LEFTCTRL"]) then
+                    if IsControlJustPressed(0, 36) then
                         local speed = GetEntitySpeed(GetVehiclePedIsIn(PlayerPedId(), false)) * 2.2369
                         SetVehicleEnginePowerMultiplier(CurrentVehicle, NitrousBoost)
                         SetVehicleEngineTorqueMultiplier(CurrentVehicle, NitrousBoost)
@@ -80,7 +80,7 @@ Citizen.CreateThread(function()
                         end)
                     end
 
-                    if IsControlJustReleased(0, Keys["LEFTCTRL"]) then
+                    if IsControlJustReleased(0, 36) then
                         if NitrousActivated then
                             local veh = GetVehiclePedIsIn(PlayerPedId())
                             SetVehicleBoostActive(veh, 0)
