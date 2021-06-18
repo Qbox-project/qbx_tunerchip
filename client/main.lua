@@ -80,7 +80,7 @@ RegisterNUICallback('reset', function(data)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsUsing(ped)
     resetVeh(veh)
-    QBCore.Functions.Notify('Tjoenertjip v1.05: Voertuig is gereset!', 'error')
+    QBCore.Functions.Notify('TunerChip v1.05: Vehicle has been reset!', 'error')
 end)
 
 RegisterNetEvent('qb-tunerchip:client:openChip')
