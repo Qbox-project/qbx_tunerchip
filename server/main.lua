@@ -26,7 +26,7 @@ QBCore.Functions.CreateCallback('qb-tunerchip:server:HasChip', function(source, 
     local Ply = QBCore.Functions.GetPlayer(src)
     local Chip = Ply.Functions.GetItemByName('tunerlaptop')
 
-    if Chip > 0 then
+    if Chip ~= nil then
         cb(true)
     else
         DropPlayer(src, 'Dit is niet de bedoeling he...')
