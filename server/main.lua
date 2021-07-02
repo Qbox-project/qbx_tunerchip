@@ -1,8 +1,3 @@
-QBCore = nil
-TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
-
--- Code
-
 local tunedVehicles = {}
 local VehicleNitrous = {}
 
