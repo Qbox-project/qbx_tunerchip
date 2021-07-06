@@ -32,7 +32,7 @@ AddEventHandler('smallresource:client:LoadNitrous', function()
                 TriggerServerEvent('nitrous:server:LoadNitrous', Plate)
             end)
         else
-            QBCore.Functions.Notify('Youre Not In A Car', 'error')
+            QBCore.Functions.Notify('You\'re Not In A Car', 'error')
         end
     else
         QBCore.Functions.Notify('You Already Have NOS Active', 'error')
