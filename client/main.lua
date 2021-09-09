@@ -274,6 +274,6 @@ RegisterNUICallback('SetStancer', function(data, cb)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped)
     
-    exports["vstancer"]:SetVstancerPreset(veh, -fOffset, -fRotation, -rOffset, -rRotation)
+    exports["vstancer"]:SetWheelPreset(veh, -fOffset, -fRotation, -rOffset, -rRotation)
 end)
 
