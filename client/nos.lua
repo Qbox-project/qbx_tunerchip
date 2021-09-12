@@ -2,8 +2,8 @@ local NitrousActivated = false
 local NitrousBoost = 35.0
 local ScreenEffect = false
 local NosFlames = nil
-VehicleNitrous = {}
-Fxs = {}
+local VehicleNitrous = {}
+local Fxs = {}
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
 AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
