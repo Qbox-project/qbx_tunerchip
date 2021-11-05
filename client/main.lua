@@ -1,4 +1,4 @@
-local inTuner = false
+local QBCore = exports['qb-core']:GetCoreObject()
 local RainbowNeon = false
 LastEngineMultiplier = 1.0
 
@@ -102,7 +102,6 @@ end)
 RegisterNUICallback('exit', function()
     openTunerLaptop(false)
     SetNuiFocus(false, false)
-    inTuner = false
 end)
 
 local LastRainbowNeonColor = 0
@@ -235,7 +234,7 @@ RegisterNUICallback('saveHeadlights', function(data)
                         end
                         Citizen.Wait(300)
                     end
-                end)                
+                end)
                 ToggleVehicleMod(veh, 22, true)
                 SetVehicleHeadlightsColour(veh, value)
             else
@@ -257,7 +256,6 @@ function openTunerLaptop(bool)
         action = "ui",
         toggle = bool
     })
-    inTuner = bool
 end
 
 RegisterNUICallback('SetStancer', function(data, cb)
@@ -273,6 +271,6 @@ RegisterNUICallback('SetStancer', function(data, cb)
 
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped)
-    
+
     exports["vstancer"]:SetWheelPreset(veh, -fOffset, -fRotation, -rOffset, -rRotation)
 end)

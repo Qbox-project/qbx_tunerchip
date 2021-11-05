@@ -1,7 +1,6 @@
+local QBCore = exports['qb-core']:GetCoreObject()
 local NitrousActivated = false
 local NitrousBoost = 35.0
-local ScreenEffect = false
-local NosFlames = nil
 local VehicleNitrous = {}
 local Fxs = {}
 
@@ -15,7 +14,6 @@ end)
 RegisterNetEvent('smallresource:client:LoadNitrous')
 AddEventHandler('smallresource:client:LoadNitrous', function()
     local IsInVehicle = IsPedInAnyVehicle(PlayerPedId())
-    --local veh = GetVehiclePedIsIn(PlayerPedId())
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped)
 
@@ -56,10 +54,9 @@ Citizen.CreateThread(function()
             if VehicleNitrous[Plate] ~= nil then
                 if VehicleNitrous[Plate].hasnitro then
                     if IsControlJustPressed(0, 36) and GetPedInVehicleSeat(CurrentVehicle, -1) == PlayerPedId() then
-                        local speed = GetEntitySpeed(GetVehiclePedIsIn(PlayerPedId(), false)) * 2.2369
                         SetVehicleEnginePowerMultiplier(CurrentVehicle, NitrousBoost)
                         SetVehicleEngineTorqueMultiplier(CurrentVehicle, NitrousBoost)
-                        SetEntityMaxSpeed(vehicle, 999.0)
+                        SetEntityMaxSpeed(CurrentVehicle, 999.0)
                         NitrousActivated = true
 
                         Citizen.CreateThread(function()
@@ -74,7 +71,6 @@ Citizen.CreateThread(function()
                                     SetVehicleEnginePowerMultiplier(CurrentVehicle, LastEngineMultiplier)
                                     SetVehicleEngineTorqueMultiplier(CurrentVehicle, 1.0)
                                     StopScreenEffect("RaceTurbo")
-                                    ScreenEffect = false
                                     for index,_ in pairs(Fxs) do
                                         StopParticleFxLooped(Fxs[index], 1)
                                         TriggerServerEvent('nitrous:server:StopSync', GetVehicleNumberPlateText(CurrentVehicle))
@@ -138,49 +134,6 @@ p_flame_location = {
 	"exhaust_14",
 	"exhaust_15",
 	"exhaust_16",
-}
-
-local bonesindex = {
-    "chassis",
-    "windscreen",
-    "seat_pside_r",
-    "seat_dside_r",
-    "bodyshell",
-    "suspension_lm",
-    "suspension_lr",
-    "platelight",
-    "attach_female",
-    "attach_male",
-    "bonnet",
-    "boot",
-    "chassis_dummy",
-    "chassis_Control",
-    "door_dside_f",
-    "door_dside_r",
-    "door_pside_f",
-    "door_pside_r",
-    "Gun_GripR",
-    "windscreen_f",
-    "platelight",
-    "VFX_Emitter",
-    "window_lf",
-    "window_lr",
-    "window_rf",
-    "window_rr",
-    "engine",
-    "gun_ammo",
-    "ROPE_ATTATCH",
-    "wheel_lf",
-    "wheel_lr",
-    "wheel_rf",
-    "wheel_rr",
-    "exhaust",
-    "overheat",
-    "misc_e",
-    "seat_dside_f",
-    "seat_pside_f",
-    "Gun_Nuzzle",
-    "seat_r",
 }
 
 ParticleDict = "veh_xs_vehicle_mods"
@@ -266,7 +219,6 @@ AddEventHandler('nitrous:client:LoadNitrous', function(Plate)
         hasnitro = true,
         level = 100,
     }
-    local IsInVehicle = IsPedInAnyVehicle(PlayerPedId())
     local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
     local CPlate = GetVehicleNumberPlateText(CurrentVehicle)
     if CPlate == Plate then
@@ -277,7 +229,7 @@ end)
 RegisterNetEvent('nitrous:client:UnloadNitrous')
 AddEventHandler('nitrous:client:UnloadNitrous', function(Plate)
     VehicleNitrous[Plate] = nil
-    
+
     local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
     local CPlate = GetVehicleNumberPlateText(CurrentVehicle)
     if CPlate == Plate then

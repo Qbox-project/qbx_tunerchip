@@ -1,10 +1,9 @@
+local QBCore = exports['qb-core']:GetCoreObject()
 local tunedVehicles = {}
 local VehicleNitrous = {}
 
 QBCore.Functions.CreateUseableItem("tunerlaptop", function(source, item)
-    local src = source
-
-    TriggerClientEvent('qb-tunerchip:client:openChip', src)
+    TriggerClientEvent('qb-tunerchip:client:openChip', source)
 end)
 
 RegisterServerEvent('qb-tunerchip:server:TuneStatus')
@@ -34,8 +33,6 @@ QBCore.Functions.CreateCallback('qb-tunerchip:server:GetStatus', function(source
 end)
 
 QBCore.Functions.CreateUseableItem("nitrous", function(source, item)
-    local Player = QBCore.Functions.GetPlayer(source)
-
     TriggerClientEvent('smallresource:client:LoadNitrous', source)
 end)
 
