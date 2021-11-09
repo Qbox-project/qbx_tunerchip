@@ -31,7 +31,7 @@ RegisterNUICallback('save', function(data)
             setVehData(veh, data)
             QBCore.Functions.Notify('TunerChip v1.05: Vehicle Tuned!', 'error')
 
-            TriggerServerEvent('qb-tunerchip:server:TuneStatus', GetVehicleNumberPlateText(veh), true)
+            TriggerServerEvent('qb-tunerchip:server:TuneStatus', QBCore.Functions.GetPlate(veh), true)
         end
     end)
 end)
@@ -40,7 +40,7 @@ RegisterNetEvent('qb-tunerchip:client:TuneStatus')
 AddEventHandler('qb-tunerchip:client:TuneStatus', function()
     local ped = PlayerPedId()
     local closestVehicle = GetClosestVehicle(GetEntityCoords(ped), 5.0, 0, 70)
-    local plate = GetVehicleNumberPlateText(closestVehicle)
+    local plate = QBCore.Functions.GetPlate(closestVehicle)
     local vehModel = GetEntityModel(closestVehicle)
     if vehModel ~= 0 then
         QBCore.Functions.TriggerCallback('qb-tunerchip:server:GetStatus', function(status)
