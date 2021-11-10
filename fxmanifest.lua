@@ -16,3 +16,5 @@ server_script 'server/main.lua'
 files {
     'html/*',
 }
+
+lua54 'yes'
