@@ -36,8 +36,7 @@ RegisterNUICallback('save', function(data)
     end)
 end)
 
-RegisterNetEvent('qb-tunerchip:client:TuneStatus')
-AddEventHandler('qb-tunerchip:client:TuneStatus', function()
+RegisterNetEvent('qb-tunerchip:client:TuneStatus', function()
     local ped = PlayerPedId()
     local closestVehicle = GetClosestVehicle(GetEntityCoords(ped), 5.0, 0, 70)
     local plate = QBCore.Functions.GetPlate(closestVehicle)
@@ -72,8 +71,7 @@ RegisterNUICallback('reset', function(data)
     QBCore.Functions.Notify('TunerChip v1.05: Vehicle has been reset!', 'error')
 end)
 
-RegisterNetEvent('qb-tunerchip:client:openChip')
-AddEventHandler('qb-tunerchip:client:openChip', function()
+RegisterNetEvent('qb-tunerchip:client:openChip', function()
     local ped = PlayerPedId()
     local inVehicle = IsPedInAnyVehicle(ped)
 
@@ -175,7 +173,7 @@ RegisterNUICallback('saveNeon', function(data)
                         SetVehicleNeonLightEnabled(veh, 1, true)
                         SetVehicleNeonLightEnabled(veh, 2, true)
                         SetVehicleNeonLightEnabled(veh, 3, true)
-                        Citizen.CreateThread(function()
+                        CreateThread(function()
                             while true do
                                 if RainbowNeon then
                                     if (LastRainbowNeonColor + 1) ~= 7 then
@@ -189,7 +187,7 @@ RegisterNUICallback('saveNeon', function(data)
                                     break
                                 end
 
-                                Citizen.Wait(350)
+                                Wait(350)
                             end
                         end)
                     end
@@ -217,7 +215,7 @@ RegisterNUICallback('saveHeadlights', function(data)
                 local veh = GetVehiclePedIsIn(ped)
                 local value = tonumber(data.value)
 
-                Citizen.CreateThread(function()
+                CreateThread(function()
                     while true do
                         if RainbowHeadlight then
                             if (RainbowHeadlightValue + 1) ~= 12 then
@@ -232,7 +230,7 @@ RegisterNUICallback('saveHeadlights', function(data)
                         else
                             break
                         end
-                        Citizen.Wait(300)
+                        Wait(300)
                     end
                 end)
                 ToggleVehicleMod(veh, 22, true)
