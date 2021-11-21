@@ -8,15 +8,13 @@ local function trim(value)
     return (string.gsub(value, '^%s*(.-)%s*$', '%1'))
 end
 
-RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
-AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     QBCore.Functions.TriggerCallback('nitrous:GetNosLoadedVehs', function(vehs)
         VehicleNitrous = vehs
     end)
 end)
 
-RegisterNetEvent('smallresource:client:LoadNitrous')
-AddEventHandler('smallresource:client:LoadNitrous', function()
+RegisterNetEvent('smallresource:client:LoadNitrous', function()
     local IsInVehicle = IsPedInAnyVehicle(PlayerPedId())
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped)
@@ -49,7 +47,7 @@ end)
 
 local nosupdated = false
 
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         local IsInVehicle = IsPedInAnyVehicle(PlayerPedId())
         local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
@@ -63,7 +61,7 @@ Citizen.CreateThread(function()
                         SetEntityMaxSpeed(CurrentVehicle, 999.0)
                         NitrousActivated = true
 
-                        Citizen.CreateThread(function()
+                        CreateThread(function()
                             while NitrousActivated do
                                 if VehicleNitrous[Plate].level - 1 ~= 0 then
                                     TriggerServerEvent('nitrous:server:UpdateNitroLevel', Plate, (VehicleNitrous[Plate].level - 1))
@@ -81,7 +79,7 @@ Citizen.CreateThread(function()
                                         Fxs[index] = nil
                                     end
                                 end
-                                Citizen.Wait(100)
+                                Wait(100)
                             end
                         end)
                     end
@@ -115,9 +113,9 @@ Citizen.CreateThread(function()
                 nosupdated = false
             end
             StopScreenEffect("RaceTurbo")
-            Citizen.Wait(1500)
+            Wait(1500)
         end
-        Citizen.Wait(3)
+        Wait(3)
     end
 end)
 
@@ -144,7 +142,7 @@ ParticleDict = "veh_xs_vehicle_mods"
 ParticleFx = "veh_nitrous"
 ParticleSize = 1.4
 
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         if NitrousActivated then
             local veh = GetVehiclePedIsIn(PlayerPedId())
@@ -158,7 +156,7 @@ Citizen.CreateThread(function()
                         if Fxs[bones] == nil then
                             RequestNamedPtfxAsset(ParticleDict)
                             while not HasNamedPtfxAssetLoaded(ParticleDict) do
-                                Citizen.Wait(0)
+                                Wait(0)
                             end
                             SetPtfxAssetNextCall(ParticleDict)
                             UseParticleFxAssetNextCall(ParticleDict)
@@ -168,14 +166,13 @@ Citizen.CreateThread(function()
                 end
             end
         end
-        Citizen.Wait(0)
+        Wait(0)
     end
 end)
 
 local NOSPFX = {}
 
-RegisterNetEvent('nitrous:client:SyncFlames')
-AddEventHandler('nitrous:client:SyncFlames', function(netid, nosid)
+RegisterNetEvent('nitrous:client:SyncFlames', function(netid, nosid)
     local veh = NetToVeh(netid)
     if veh ~= 0 then
         local myid = GetPlayerServerId(PlayerId())
@@ -191,7 +188,7 @@ AddEventHandler('nitrous:client:SyncFlames', function(netid, nosid)
                     if NOSPFX[trim(GetVehicleNumberPlateText(veh))][bones].pfx == nil then
                         RequestNamedPtfxAsset(ParticleDict)
                         while not HasNamedPtfxAssetLoaded(ParticleDict) do
-                            Citizen.Wait(0)
+                            Wait(0)
                         end
                         SetPtfxAssetNextCall(ParticleDict)
                         UseParticleFxAssetNextCall(ParticleDict)
@@ -204,21 +201,18 @@ AddEventHandler('nitrous:client:SyncFlames', function(netid, nosid)
     end
 end)
 
-RegisterNetEvent('nitrous:client:StopSync')
-AddEventHandler('nitrous:client:StopSync', function(plate)
+RegisterNetEvent('nitrous:client:StopSync', function(plate)
     for k, v in pairs(NOSPFX[plate]) do
         StopParticleFxLooped(v.pfx, 1)
         NOSPFX[plate][k].pfx = nil
     end
 end)
 
-RegisterNetEvent('nitrous:client:UpdateNitroLevel')
-AddEventHandler('nitrous:client:UpdateNitroLevel', function(Plate, level)
+RegisterNetEvent('nitrous:client:UpdateNitroLevel', function(Plate, level)
     VehicleNitrous[Plate].level = level
 end)
 
-RegisterNetEvent('nitrous:client:LoadNitrous')
-AddEventHandler('nitrous:client:LoadNitrous', function(Plate)
+RegisterNetEvent('nitrous:client:LoadNitrous', function(Plate)
     VehicleNitrous[Plate] = {
         hasnitro = true,
         level = 100,
@@ -230,10 +224,8 @@ AddEventHandler('nitrous:client:LoadNitrous', function(Plate)
     end
 end)
 
-RegisterNetEvent('nitrous:client:UnloadNitrous')
-AddEventHandler('nitrous:client:UnloadNitrous', function(Plate)
+RegisterNetEvent('nitrous:client:UnloadNitrous', function(Plate)
     VehicleNitrous[Plate] = nil
-
     local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
     local CPlate = trim(GetVehicleNumberPlateText(CurrentVehicle))
     if CPlate == Plate then
