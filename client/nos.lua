@@ -38,7 +38,7 @@ RegisterNetEvent('smallresource:client:LoadNitrous', function()
                 QBCore.Functions.Notify(Lang:t("error.you_cannot_do_that_from_this_seat"), "error")
             end
         else
-            QBCore.Functions.Notify(Lang:t("error.you_re_not_in_a_car"), 'error')
+            QBCore.Functions.Notify(Lang:t("error.you_are_not_in_a_vehicle"), 'error')
         end
     else
         QBCore.Functions.Notify(Lang:t("error.you_already_have_nos_active"), 'error')

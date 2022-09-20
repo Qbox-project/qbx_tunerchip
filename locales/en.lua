@@ -13,7 +13,6 @@ local Translations = {
         tunerchip_vhicle_has_been_reset = "TunerChip v1.05: Vehicle has been reset!",
         you_are_not_in_a_vehicle = "You Are Not In A Vehicle",
         you_cannot_do_that_from_this_seat = "You cannot do that from this seat!",
-        you_re_not_in_a_car = "You\'re Not In A Car",
         you_already_have_nos_active = "You Already Have NOS Active",
         canceled = "Canceled",
     },
