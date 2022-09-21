@@ -69,7 +69,7 @@ RegisterNUICallback('reset', function(_, cb)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsUsing(ped)
     resetVeh(veh)
-    QBCore.Functions.Notify(Lang:t("error.tunerchip_vhicle_has_been_reset"), 'error')
+    QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_has_been_reset"), 'error')
     cb("ok")
 end)
 
@@ -78,7 +78,7 @@ RegisterNetEvent('qb-tunerchip:client:openChip', function()
     local inVehicle = IsPedInAnyVehicle(ped)
 
     if inVehicle then
-        QBCore.Functions.Progressbar("connect_laptop", Lang:t("error.tunerchip_vhicle_has_been_reset"), 2000, false, true, {
+        QBCore.Functions.Progressbar("connect_laptop", Lang:t("error.tunerchip_vehicle_has_been_reset"), 2000, false, true, {
             disableMovement = true,
             disableCarMovement = true,
             disableMouse = false,
