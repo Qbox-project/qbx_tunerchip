@@ -1,4 +1,4 @@
-QBCore = exports['qb-core']:GetCoreObject()
+QBCore = exports['qbx-core']:GetCoreObject()
 local RainbowNeon = false
 LastEngineMultiplier = 1.0
 
