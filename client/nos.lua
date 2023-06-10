@@ -3,37 +3,33 @@ local NitrousBoost = 35.0
 local VehicleNitrous = {}
 local Fxs = {}
 
-local function trim(value)
-	if not value then return nil end
-    return (string.gsub(value, '^%s*(.-)%s*$', '%1'))
-end
-
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    QBCore.Functions.TriggerCallback('nitrous:GetNosLoadedVehs', function(vehs)
-        VehicleNitrous = vehs
-    end)
+    local vehs = lib.callback.await('nitrous:GetNosLoadedVehs', false)
+    VehicleNitrous = vehs
 end)
 
 RegisterNetEvent('smallresource:client:LoadNitrous', function()
-    local IsInVehicle = IsPedInAnyVehicle(PlayerPedId())
-    local ped = PlayerPedId()
-    local veh = GetVehiclePedIsIn(ped)
-
     if not NitrousActivated then
-        if IsInVehicle and not IsThisModelABike(GetEntityModel(GetVehiclePedIsIn(ped))) then
-            if GetPedInVehicleSeat(veh, -1) == ped then
-                QBCore.Functions.Progressbar("use_nos", Lang:t("text.connecting_nos"), 1000, false, true, {
-                    disableMovement = false,
-                    disableCarMovement = false,
-                    disableMouse = false,
-                    disableCombat = true,
-                }, {}, {}, {}, function() -- Done
+        if cache.vehicle and not IsThisModelABike(GetEntityModel(cache.vehicle)) then
+            if cache.seat == -1 then
+                if lib.progressBar({
+                    duration = 1000,
+                    label = Lang:t("text.connecting_nos"),
+                    useWhileDead = false,
+                    canCancel = true,
+                    disable = {
+                        move = false,
+                        car = false,
+                        mouse = false,
+                        combat = true
+                    }
+                }) then
                     TriggerEvent("inventory:client:ItemBox", QBCore.Shared.Items['nitrous'], "remove")
                     TriggerServerEvent("nitrous:server:removeItem")
-                    local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
-                    local Plate = trim(GetVehicleNumberPlateText(CurrentVehicle))
+                    local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+                    local Plate = QBCore.Functions.GetPlate(CurrentVehicle)
                     TriggerServerEvent('nitrous:server:LoadNitrous', Plate)
-                end)
+                end
             else
                 QBCore.Functions.Notify(Lang:t("error.you_cannot_do_that_from_this_seat"), "error")
             end
@@ -49,13 +45,12 @@ local nosupdated = false
 
 CreateThread(function()
     while true do
-        local IsInVehicle = IsPedInAnyVehicle(PlayerPedId())
-        local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
-        if IsInVehicle then
-            local Plate = trim(GetVehicleNumberPlateText(CurrentVehicle))
+        local CurrentVehicle = cache.vehicle
+        if CurrentVehicle then
+            local Plate = QBCore.Functions.GetPlate(CurrentVehicle)
             if VehicleNitrous[Plate] ~= nil then
                 if VehicleNitrous[Plate].hasnitro then
-                    if IsControlJustPressed(0, 36) and GetPedInVehicleSeat(CurrentVehicle, -1) == PlayerPedId() then
+                    if IsControlJustPressed(0, 36) and cache.seat == -1 then
                         SetVehicleEnginePowerMultiplier(CurrentVehicle, NitrousBoost)
                         SetVehicleEngineTorqueMultiplier(CurrentVehicle, NitrousBoost)
                         SetEntityMaxSpeed(CurrentVehicle, 999.0)
@@ -69,13 +64,13 @@ CreateThread(function()
                                 else
                                     TriggerServerEvent('nitrous:server:UnloadNitrous', Plate)
                                     NitrousActivated = false
-                                    SetVehicleBoostActive(CurrentVehicle, 0)
+                                    SetVehicleBoostActive(CurrentVehicle, false)
                                     SetVehicleEnginePowerMultiplier(CurrentVehicle, LastEngineMultiplier)
                                     SetVehicleEngineTorqueMultiplier(CurrentVehicle, 1.0)
                                     StopScreenEffect("RaceTurbo")
-                                    for index,_ in pairs(Fxs) do
-                                        StopParticleFxLooped(Fxs[index], 1)
-                                        TriggerServerEvent('nitrous:server:StopSync', trim(GetVehicleNumberPlateText(CurrentVehicle)))
+                                    for index in pairs(Fxs) do
+                                        StopParticleFxLooped(Fxs[index], true)
+                                        TriggerServerEvent('nitrous:server:StopSync', QBCore.Functions.GetPlate(CurrentVehicle))
                                         Fxs[index] = nil
                                     end
                                 end
@@ -84,15 +79,15 @@ CreateThread(function()
                         end)
                     end
 
-                    if IsControlJustReleased(0, 36) and GetPedInVehicleSeat(CurrentVehicle, -1) == PlayerPedId() then
+                    if IsControlJustReleased(0, 36) and cache.seat == -1 then
                         if NitrousActivated then
-                            local veh = GetVehiclePedIsIn(PlayerPedId())
-                            SetVehicleBoostActive(veh, 0)
+                            local veh = GetVehiclePedIsIn(PlayerPedId(), false)
+                            SetVehicleBoostActive(veh, false)
                             SetVehicleEnginePowerMultiplier(veh, LastEngineMultiplier)
                             SetVehicleEngineTorqueMultiplier(veh, 1.0)
-                            for index,_ in pairs(Fxs) do
-                                StopParticleFxLooped(Fxs[index], 1)
-                                TriggerServerEvent('nitrous:server:StopSync', trim(GetVehicleNumberPlateText(veh)))
+                            for index in pairs(Fxs) do
+                                StopParticleFxLooped(Fxs[index], true)
+                                TriggerServerEvent('nitrous:server:StopSync', QBCore.Functions.GetPlate(veh))
                                 Fxs[index] = nil
                             end
                             StopScreenEffect("RaceTurbo")
@@ -115,7 +110,7 @@ CreateThread(function()
             StopScreenEffect("RaceTurbo")
             Wait(1500)
         end
-        Wait(3)
+        Wait(0)
     end
 end)
 
@@ -145,10 +140,10 @@ ParticleSize = 1.4
 CreateThread(function()
     while true do
         if NitrousActivated then
-            local veh = GetVehiclePedIsIn(PlayerPedId())
+            local veh = cache.vehicle
             if veh ~= 0 then
                 TriggerServerEvent('nitrous:server:SyncFlames', VehToNet(veh))
-                SetVehicleBoostActive(veh, 1)
+                SetVehicleBoostActive(veh, true)
                 StartScreenEffect("RaceTurbo", 0.0, 0)
 
                 for _,bones in pairs(p_flame_location) do
@@ -160,7 +155,7 @@ CreateThread(function()
                             end
                             SetPtfxAssetNextCall(ParticleDict)
                             UseParticleFxAssetNextCall(ParticleDict)
-                            Fxs[bones] = StartParticleFxLoopedOnEntityBone(ParticleFx, veh, 0.0, -0.02, 0.0, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(veh, bones), ParticleSize, 0.0, 0.0, 0.0)
+                            Fxs[bones] = StartParticleFxLoopedOnEntityBone(ParticleFx, veh, 0.0, -0.02, 0.0, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(veh, bones), ParticleSize, false, false, false)
                         end
                     end
                 end
@@ -175,25 +170,25 @@ local NOSPFX = {}
 RegisterNetEvent('nitrous:client:SyncFlames', function(netid, nosid)
     local veh = NetToVeh(netid)
     if veh ~= 0 then
-        local myid = GetPlayerServerId(PlayerId())
-        if NOSPFX[trim(GetVehicleNumberPlateText(veh))] == nil then
-            NOSPFX[trim(GetVehicleNumberPlateText(veh))] = {}
+        local myid = cache.serverId
+        local plate = QBCore.Functions.GetPlate(veh)
+        if NOSPFX[plate] == nil then
+            NOSPFX[plate] = {}
         end
         if myid ~= nosid then
             for _,bones in pairs(p_flame_location) do
-                if NOSPFX[trim(GetVehicleNumberPlateText(veh))][bones] == nil then
-                    NOSPFX[trim(GetVehicleNumberPlateText(veh))][bones] = {}
+                if NOSPFX[plate][bones] == nil then
+                    NOSPFX[plate][bones] = {}
                 end
                 if GetEntityBoneIndexByName(veh, bones) ~= -1 then
-                    if NOSPFX[trim(GetVehicleNumberPlateText(veh))][bones].pfx == nil then
+                    if NOSPFX[plate][bones].pfx == nil then
                         RequestNamedPtfxAsset(ParticleDict)
                         while not HasNamedPtfxAssetLoaded(ParticleDict) do
                             Wait(0)
                         end
                         SetPtfxAssetNextCall(ParticleDict)
                         UseParticleFxAssetNextCall(ParticleDict)
-                        NOSPFX[trim(GetVehicleNumberPlateText(veh))][bones].pfx = StartParticleFxLoopedOnEntityBone(ParticleFx, veh, 0.0, -0.05, 0.0, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(veh, bones), ParticleSize, 0.0, 0.0, 0.0)
-
+                        NOSPFX[plate][bones].pfx = StartParticleFxLoopedOnEntityBone(ParticleFx, veh, 0.0, -0.05, 0.0, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(veh, bones), ParticleSize, false, false, false)
                     end
                 end
             end
@@ -203,7 +198,7 @@ end)
 
 RegisterNetEvent('nitrous:client:StopSync', function(plate)
     for k, v in pairs(NOSPFX[plate]) do
-        StopParticleFxLooped(v.pfx, 1)
+        StopParticleFxLooped(v.pfx, true)
         NOSPFX[plate][k].pfx = nil
     end
 end)
@@ -217,8 +212,8 @@ RegisterNetEvent('nitrous:client:LoadNitrous', function(Plate)
         hasnitro = true,
         level = 100,
     }
-    local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
-    local CPlate = trim(GetVehicleNumberPlateText(CurrentVehicle))
+    local CurrentVehicle = cache.vehicle
+    local CPlate = QBCore.Functions.GetPlate(CurrentVehicle)
     if CPlate == Plate then
         TriggerEvent('hud:client:UpdateNitrous', VehicleNitrous[Plate].hasnitro,  VehicleNitrous[Plate].level, false)
     end
@@ -226,8 +221,8 @@ end)
 
 RegisterNetEvent('nitrous:client:UnloadNitrous', function(Plate)
     VehicleNitrous[Plate] = nil
-    local CurrentVehicle = GetVehiclePedIsIn(PlayerPedId())
-    local CPlate = trim(GetVehicleNumberPlateText(CurrentVehicle))
+    local CurrentVehicle = cache.vehicle
+    local CPlate = QBCore.Functions.GetPlate(CurrentVehicle)
     if CPlate == Plate then
         NitrousActivated = false
         TriggerEvent('hud:client:UpdateNitrous', false, nil, false)
