@@ -1,5 +1,6 @@
 local QBCore = exports['qbx-core']:GetCoreObject()
 local tunedVehicles = {}
+local nitrousVehicles = {}
 
 QBCore.Functions.CreateUseableItem("tunerlaptop", function(source)
     TriggerClientEvent('qb-tunerchip:client:openChip', source)
@@ -13,21 +14,12 @@ RegisterNetEvent('qb-tunerchip:server:TuneStatus', function(plate, bool)
     end
 end)
 
-QBCore.Functions.CreateCallback('qb-tunerchip:server:HasChip', function(source, cb)
-    local src = source
-    local Ply = QBCore.Functions.GetPlayer(src)
-    local Chip = Ply.Functions.GetItemByName('tunerlaptop')
-
-    if Chip ~= nil then
-        cb(true)
-    else
-        DropPlayer(src, Lang:t("text.this_is_not_the_idea_is_it"))
-        cb(true)
-    end
+lib.callback.register('nitrous:GetNosLoadedVehs', function()
+    return nitrousVehicles
 end)
 
-QBCore.Functions.CreateCallback('qb-tunerchip:server:GetStatus', function(_, cb, plate)
-    cb(tunedVehicles[plate])
+lib.callback.register('qb-tunerchip:server:GetStatus', function(_, plate)
+    return tunedVehicles[plate]
 end)
 
 QBCore.Functions.CreateUseableItem("nitrous", function(source)
@@ -35,6 +27,10 @@ QBCore.Functions.CreateUseableItem("nitrous", function(source)
 end)
 
 RegisterNetEvent('nitrous:server:LoadNitrous', function(Plate)
+    nitrousVehicles[Plate] = {
+        hasnitro = true,
+        level = 100,
+    }
     TriggerClientEvent('nitrous:client:LoadNitrous', -1, Plate)
 end)
 
@@ -43,10 +39,12 @@ RegisterNetEvent('nitrous:server:SyncFlames', function(netId)
 end)
 
 RegisterNetEvent('nitrous:server:UnloadNitrous', function(Plate)
+    nitrousVehicles[Plate] = nil
     TriggerClientEvent('nitrous:client:UnloadNitrous', -1, Plate)
 end)
 
 RegisterNetEvent('nitrous:server:UpdateNitroLevel', function(Plate, level)
+    nitrousVehicles[Plate].level = level
     TriggerClientEvent('nitrous:client:UpdateNitroLevel', -1, Plate, level)
 end)
 
