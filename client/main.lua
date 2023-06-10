@@ -2,7 +2,7 @@ QBCore = exports['qbx-core']:GetCoreObject()
 local RainbowNeon = false
 LastEngineMultiplier = 1.0
 
-function setVehData(veh,data)
+function setVehData(veh, data)
     local multp = 0.12
     local dTrain = 0.0
     if tonumber(data.drivetrain) == 2 then dTrain = 0.5 elseif tonumber(data.drivetrain) == 3 then dTrain = 1.0 end
@@ -24,76 +24,67 @@ function resetVeh(veh)
 end
 
 RegisterNUICallback('save', function(data, cb)
-    QBCore.Functions.TriggerCallback('qb-tunerchip:server:HasChip', function(HasChip)
-        if HasChip then
-            local ped = PlayerPedId()
-            local veh = GetVehiclePedIsUsing(ped)
-            setVehData(veh, data)
-            QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_tuned"), 'error')
-
-            TriggerServerEvent('qb-tunerchip:server:TuneStatus', QBCore.Functions.GetPlate(veh), true)
-        end
-        cb('ok')
-    end)
+    local HasChip = QBCore.Functions.HasItem('tunerlaptop')
+    if HasChip then
+        setVehData(cache.vehicle, data)
+        QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_tuned"), 'error')
+        TriggerServerEvent('qb-tunerchip:server:TuneStatus', QBCore.Functions.GetPlate(cache.vehicle), true)
+    end
+    cb('ok')
 end)
 
 RegisterNetEvent('qb-tunerchip:client:TuneStatus', function()
-    local ped = PlayerPedId()
-    local closestVehicle = GetClosestVehicle(GetEntityCoords(ped), 5.0, 0, 70)
+    local coords = GetEntityCoords(cache.ped)
+    local closestVehicle = GetClosestVehicle(coords.x, coords.y, coords.z, 5.0, 0, 70)
     local plate = QBCore.Functions.GetPlate(closestVehicle)
     local vehModel = GetEntityModel(closestVehicle)
     if vehModel ~= 0 then
-        QBCore.Functions.TriggerCallback('qb-tunerchip:server:GetStatus', function(status)
-            if status then
-                QBCore.Functions.Notify(Lang:t("success.this_vehicle_has_been_tuned"), 'success')
-            else
-                QBCore.Functions.Notify(Lang:t("error.this_vehicle_has_not_been_tuned"), 'error')
-            end
-        end, plate)
+        local status = lib.callback.await('qb-tunerchip:server:GetStatus', false, plate)
+        if status then
+            QBCore.Functions.Notify(Lang:t("success.this_vehicle_has_been_tuned"), 'success')
+        else
+            QBCore.Functions.Notify(Lang:t("error.this_vehicle_has_not_been_tuned"), 'error')
+        end
     else
         QBCore.Functions.Notify(Lang:t("error.no_vehicle_nearby"), 'error')
     end
 end)
 
 RegisterNUICallback('checkItem', function(data, cb)
-    local retval = false
-    QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
-        if result then
-            retval = true
-        end
-        cb(retval)
-    end, data.item)
+    cb(QBCore.Functions.HasItem(data.item))
 end)
 
 RegisterNUICallback('reset', function(_, cb)
-    local ped = PlayerPedId()
-    local veh = GetVehiclePedIsUsing(ped)
-    resetVeh(veh)
+    resetVeh(cache.vehicle)
     QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_has_been_reset"), 'error')
     cb("ok")
 end)
 
 RegisterNetEvent('qb-tunerchip:client:openChip', function()
-    local ped = PlayerPedId()
-    local inVehicle = IsPedInAnyVehicle(ped)
-
-    if inVehicle then
-        QBCore.Functions.Progressbar("connect_laptop", Lang:t("error.tunerchip_vehicle_has_been_reset"), 2000, false, true, {
-            disableMovement = true,
-            disableCarMovement = true,
-            disableMouse = false,
-            disableCombat = true,
-        }, {
-            animDict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@",
-            anim = "machinic_loop_mechandplayer",
-            flags = 16,
-        }, {}, {}, function() -- Done
-            StopAnimTask(PlayerPedId(), "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
+    if cache.vehicle then
+        if lib.progressBar({
+            duration = 2000,
+            label = Lang:t("error.tunerchip_vehicle_has_been_reset"),
+            useWhileDead = false,
+            canCancel = true,
+            anim = {
+                dict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@",
+                clip = "machinic_loop_mechandplayer",
+                flag = 16
+            },
+            disable = {
+                move = true,
+                car = true,
+                mouse = false,
+                combat = true
+            }
+        }) then
             openTunerLaptop(true)
-        end, function() -- Cancel
-            StopAnimTask(PlayerPedId(), "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
+        else
             QBCore.Functions.Notify(Lang:t("error.canceled"), "error")
-        end)
+        end
+
+        StopAnimTask(cache.ped, "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
     else
         QBCore.Functions.Notify(Lang:t("error.you_are_not_in_a_vehicle"), "error")
     end
@@ -141,116 +132,113 @@ local RainbowNeonColors = {
 }
 
 RegisterNUICallback('saveNeon', function(data, cb)
-    QBCore.Functions.TriggerCallback('qb-tunerchip:server:HasChip', function(HasChip)
-        if HasChip then
-            if not data.rainbowEnabled then
-                local ped = PlayerPedId()
-                local veh = GetVehiclePedIsIn(ped)
+    local HasChip = QBCore.Functions.HasItem('tunerlaptop')
+    if HasChip then
+        if not data.rainbowEnabled then
+            local veh = cache.vehicle
 
-                if tonumber(data.neonEnabled) == 1 then
+            if tonumber(data.neonEnabled) == 1 then
+                SetVehicleNeonLightEnabled(veh, 0, true)
+                SetVehicleNeonLightEnabled(veh, 1, true)
+                SetVehicleNeonLightEnabled(veh, 2, true)
+                SetVehicleNeonLightEnabled(veh, 3, true)
+                data.r = tonumber(data.r)
+                data.g = tonumber(data.g)
+                data.b = tonumber(data.b)
+                if data.r and data.g and data.b then
+                    SetVehicleNeonLightsColour(veh, data.r, data.g, data.b)
+                else
+                    SetVehicleNeonLightsColour(veh, 255, 255, 255)
+                end
+                RainbowNeon = false
+            else
+                SetVehicleNeonLightEnabled(veh, 0, false)
+                SetVehicleNeonLightEnabled(veh, 1, false)
+                SetVehicleNeonLightEnabled(veh, 2, false)
+                SetVehicleNeonLightEnabled(veh, 3, false)
+                RainbowNeon = false
+            end
+        else
+            local veh = cache.vehicle
+
+            if tonumber(data.neonEnabled) == 1 then
+                if not RainbowNeon then
+                    RainbowNeon = true
                     SetVehicleNeonLightEnabled(veh, 0, true)
                     SetVehicleNeonLightEnabled(veh, 1, true)
                     SetVehicleNeonLightEnabled(veh, 2, true)
                     SetVehicleNeonLightEnabled(veh, 3, true)
-                    if tonumber(data.r) ~= nil and tonumber(data.g) ~= nil and tonumber(data.b) ~= nil then
-                        SetVehicleNeonLightsColour(veh, tonumber(data.r), tonumber(data.g), tonumber(data.b))
-                    else
-                        SetVehicleNeonLightsColour(veh, 255, 255, 255)
-                    end
-                    RainbowNeon = false
-                else
-                    SetVehicleNeonLightEnabled(veh, 0, false)
-                    SetVehicleNeonLightEnabled(veh, 1, false)
-                    SetVehicleNeonLightEnabled(veh, 2, false)
-                    SetVehicleNeonLightEnabled(veh, 3, false)
-                    RainbowNeon = false
+                    CreateThread(function()
+                        while true do
+                            if RainbowNeon then
+                                if (LastRainbowNeonColor + 1) ~= 7 then
+                                    LastRainbowNeonColor = LastRainbowNeonColor + 1
+                                    SetVehicleNeonLightsColour(veh, RainbowNeonColors[LastRainbowNeonColor].r, RainbowNeonColors[LastRainbowNeonColor].g, RainbowNeonColors[LastRainbowNeonColor].b)
+                                else
+                                    LastRainbowNeonColor = 1
+                                    SetVehicleNeonLightsColour(veh, RainbowNeonColors[LastRainbowNeonColor].r, RainbowNeonColors[LastRainbowNeonColor].g, RainbowNeonColors[LastRainbowNeonColor].b)
+                                end
+                            else
+                                break
+                            end
+
+                            Wait(350)
+                        end
+                    end)
                 end
             else
-                local ped = PlayerPedId()
-                local veh = GetVehiclePedIsIn(ped)
-
-                if tonumber(data.neonEnabled) == 1 then
-                    if not RainbowNeon then
-                        RainbowNeon = true
-                        SetVehicleNeonLightEnabled(veh, 0, true)
-                        SetVehicleNeonLightEnabled(veh, 1, true)
-                        SetVehicleNeonLightEnabled(veh, 2, true)
-                        SetVehicleNeonLightEnabled(veh, 3, true)
-                        CreateThread(function()
-                            while true do
-                                if RainbowNeon then
-                                    if (LastRainbowNeonColor + 1) ~= 7 then
-                                        LastRainbowNeonColor = LastRainbowNeonColor + 1
-                                        SetVehicleNeonLightsColour(veh, RainbowNeonColors[LastRainbowNeonColor].r, RainbowNeonColors[LastRainbowNeonColor].g, RainbowNeonColors[LastRainbowNeonColor].b)
-                                    else
-                                        LastRainbowNeonColor = 1
-                                        SetVehicleNeonLightsColour(veh, RainbowNeonColors[LastRainbowNeonColor].r, RainbowNeonColors[LastRainbowNeonColor].g, RainbowNeonColors[LastRainbowNeonColor].b)
-                                    end
-                                else
-                                    break
-                                end
-
-                                Wait(350)
-                            end
-                        end)
-                    end
-                else
-                    RainbowNeon = false
-                    SetVehicleNeonLightEnabled(veh, 0, false)
-                    SetVehicleNeonLightEnabled(veh, 1, false)
-                    SetVehicleNeonLightEnabled(veh, 2, false)
-                    SetVehicleNeonLightEnabled(veh, 3, false)
-                end
+                RainbowNeon = false
+                SetVehicleNeonLightEnabled(veh, 0, false)
+                SetVehicleNeonLightEnabled(veh, 1, false)
+                SetVehicleNeonLightEnabled(veh, 2, false)
+                SetVehicleNeonLightEnabled(veh, 3, false)
             end
         end
-        cb('ok')
-    end)
+    end
+    cb('ok')
 end)
 
 local RainbowHeadlight = false
 local RainbowHeadlightValue = 0
 
 RegisterNUICallback('saveHeadlights', function(data, cb)
-    QBCore.Functions.TriggerCallback('qb-tunerchip:server:HasChip', function(HasChip)
-        if HasChip then
-            if data.rainbowEnabled then
-                RainbowHeadlight = true
-                local ped = PlayerPedId()
-                local veh = GetVehiclePedIsIn(ped)
-                local value = tonumber(data.value)
+    local HasChip = QBCore.Functions.HasItem('tunerlaptop')
+    if HasChip then
+        if data.rainbowEnabled then
+            RainbowHeadlight = true
+            local veh = cache.vehicle
+            local value = tonumber(data.value)
 
-                CreateThread(function()
-                    while true do
-                        if RainbowHeadlight then
-                            if (RainbowHeadlightValue + 1) ~= 12 then
-                                RainbowHeadlightValue = RainbowHeadlightValue + 1
-                                ToggleVehicleMod(veh, 22, true)
-                                SetVehicleHeadlightsColour(veh, RainbowHeadlightValue)
-                            else
-                                RainbowHeadlightValue = 1
-                                ToggleVehicleMod(veh, 22, true)
-                                SetVehicleHeadlightsColour(veh, RainbowHeadlightValue)
-                            end
+            CreateThread(function()
+                while true do
+                    if RainbowHeadlight then
+                        if (RainbowHeadlightValue + 1) ~= 12 then
+                            RainbowHeadlightValue = RainbowHeadlightValue + 1
+                            ToggleVehicleMod(veh, 22, true)
+                            SetVehicleHeadlightsColour(veh, RainbowHeadlightValue)
                         else
-                            break
+                            RainbowHeadlightValue = 1
+                            ToggleVehicleMod(veh, 22, true)
+                            SetVehicleHeadlightsColour(veh, RainbowHeadlightValue)
                         end
-                        Wait(300)
+                    else
+                        break
                     end
-                end)
-                ToggleVehicleMod(veh, 22, true)
-                SetVehicleHeadlightsColour(veh, value)
-            else
-                RainbowHeadlight = false
-                local ped = PlayerPedId()
-                local veh = GetVehiclePedIsIn(ped)
-                local value = tonumber(data.value)
+                    Wait(300)
+                end
+            end)
+            ToggleVehicleMod(veh, 22, true)
+            SetVehicleHeadlightsColour(veh, value)
+        else
+            RainbowHeadlight = false
+            local veh = cache.vehicle
+            local value = tonumber(data.value)
 
-                ToggleVehicleMod(veh, 22, true)
-                SetVehicleHeadlightsColour(veh, value)
-            end
+            ToggleVehicleMod(veh, 22, true)
+            SetVehicleHeadlightsColour(veh, value)
         end
-        cb('ok')
-    end)
+    end
+    cb('ok')
 end)
 
 function openTunerLaptop(bool)
@@ -266,8 +254,6 @@ RegisterNUICallback('SetStancer', function(data, cb)
     local fRotation = data.fRotation * 100 / 1000
     local rOffset = data.rOffset * 100 / 1000
     local rRotation = data.rRotation * 100 / 1000
-    local ped = PlayerPedId()
-    local veh = GetVehiclePedIsIn(ped)
-    exports["vstancer"]:SetWheelPreset(veh, -fOffset, -fRotation, -rOffset, -rRotation)
+    exports["vstancer"]:SetWheelPreset(cache.vehicle, -fOffset, -fRotation, -rOffset, -rRotation)
     cb("ok")
 end)
