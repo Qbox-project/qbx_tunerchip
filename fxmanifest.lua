@@ -6,12 +6,8 @@ version '1.0.0'
 
 ui_page 'html/index.html'
 
-client_scripts {
-    'client/main.lua',
-    'client/nos.lua'
-}
-
 shared_scripts {
+    '@ox_lib/init.lua',
     '@qb-core/shared/locale.lua',
     'locales/en.lua',
     'locales/*.lua',
@@ -19,8 +15,15 @@ shared_scripts {
 
 server_script 'server/main.lua'
 
+client_scripts {
+    'client/main.lua',
+    'client/nos.lua'
+}
+
 files {
     'html/*',
 }
 
+provide 'qb-tunerchip'
 lua54 'yes'
+use_experimental_fxv2_oal 'yes'
