@@ -80,7 +80,7 @@ CreateThread(function()
 
                     if IsControlJustReleased(0, 36) and cache.seat == -1 then
                         if nitrousActivated then
-                            SetVehicleBoostActive(veh, false)
+                            SetVehicleBoostActive(cache.vehicle, false)
                             SetVehicleEnginePowerMultiplier(cache.vehicle, LastEngineMultiplier)
                             SetVehicleEngineTorqueMultiplier(cache.vehicle, 1.0)
                             for index in pairs(Fxs) do
@@ -140,7 +140,7 @@ CreateThread(function()
         if nitrousActivated then
             if cache.vehicle ~= 0 then
                 TriggerServerEvent('nitrous:server:SyncFlames', VehToNet(cache.vehicle))
-                SetVehicleBoostActive(veh, true)
+                SetVehicleBoostActive(cache.vehicle, true)
                 StartScreenEffect("RaceTurbo", 0.0, 0)
 
                 for _,bones in pairs(p_flame_location) do

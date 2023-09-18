@@ -169,6 +169,7 @@ local rainbowHeadlightValue = 0
 RegisterNUICallback('saveHeadlights', function(data, cb)
     local hasChip = exports.ox_inventory:Search('count', 'tunerlaptop') >= 1
     if hasChip then
+        local value = tonumber(data.value)
         if data.rainbowEnabled then
             rainbowHeadlight = true
             CreateThread(function()
@@ -193,7 +194,6 @@ RegisterNUICallback('saveHeadlights', function(data, cb)
             SetVehicleHeadlightsColour(cache.vehicle, value)
         else
             rainbowHeadlight = false
-            local value = tonumber(data.value)
 
             ToggleVehicleMod(cache.vehicle, 22, true)
             SetVehicleHeadlightsColour(cache.vehicle, value)
