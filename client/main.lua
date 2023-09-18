@@ -138,7 +138,7 @@ RegisterNUICallback('saveNeon', function(data, cb)
                         while true do
                             if rainbowNeon then
                                 if (lastRainbowNeonColor + 1) ~= 7 then
-                                    lastRainbowNeonColor = lastRainbowNeonColor + 1
+                                    lastRainbowNeonColor += 1
                                     SetVehicleNeonLightsColour(cache.vehicle, rainbowNeonColors[lastRainbowNeonColor].r, rainbowNeonColors[lastRainbowNeonColor].g, rainbowNeonColors[lastRainbowNeonColor].b)
                                 else
                                     lastRainbowNeonColor = 1
