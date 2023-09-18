@@ -1,5 +1,4 @@
-QBCore = exports['qbx-core']:GetCoreObject()
-local RainbowNeon = false
+local rainbowNeon = false
 LastEngineMultiplier = 1.0
 
 function setVehData(veh, data)
@@ -24,8 +23,8 @@ function resetVeh(veh)
 end
 
 RegisterNUICallback('save', function(data, cb)
-    local HasChip = QBCore.Functions.HasItem('tunerlaptop')
-    if HasChip then
+    local hasChip = exports.ox_inventory:Search('count', 'tunerlaptop') >= 1
+    if hasChip then
         setVehData(cache.vehicle, data)
         QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_tuned"), 'error')
         TriggerServerEvent('qb-tunerchip:server:TuneStatus', QBCore.Functions.GetPlate(cache.vehicle), true)
@@ -36,7 +35,7 @@ end)
 RegisterNetEvent('qb-tunerchip:client:TuneStatus', function()
     local coords = GetEntityCoords(cache.ped)
     local closestVehicle = GetClosestVehicle(coords.x, coords.y, coords.z, 5.0, 0, 70)
-    local plate = QBCore.Functions.GetPlate(closestVehicle)
+    local plate = GetPlate(closestVehicle)
     local vehModel = GetEntityModel(closestVehicle)
     if vehModel ~= 0 then
         local status = lib.callback.await('qb-tunerchip:server:GetStatus', false, plate)
@@ -83,8 +82,6 @@ RegisterNetEvent('qb-tunerchip:client:openChip', function()
         else
             QBCore.Functions.Notify(Lang:t("error.canceled"), "error")
         end
-
-        StopAnimTask(cache.ped, "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
     else
         QBCore.Functions.Notify(Lang:t("error.you_are_not_in_a_vehicle"), "error")
     end
@@ -96,87 +93,56 @@ RegisterNUICallback('exit', function(_, cb)
     cb('ok')
 end)
 
-local LastRainbowNeonColor = 0
+local lastRainbowNeonColor = 0
 
-local RainbowNeonColors = {
-    [1] = {
-        r = 255,
-        g = 0,
-        b = 0
-    },
-    [2] = {
-        r = 255,
-        g = 165,
-        b = 0
-    },
-    [3] = {
-        r = 255,
-        g = 255,
-        b = 0
-    },
-    [4] = {
-        r = 0,
-        g = 0,
-        b = 255
-    },
-    [5] = {
-        r = 75,
-        g = 0,
-        b = 130
-    },
-    [6] = {
-        r = 238,
-        g = 130,
-        b = 238
-    },
+local rainbowNeonColors = {
+    [1] = {r = 255, g = 0, b = 0},
+    [2] = {r = 255, g = 165, b = 0},
+    [3] = {r = 255, g = 255,  b = 0},
+    [4] = {r = 0, g = 0, b = 255},
+    [5] = {r = 75, g = 0, b = 130},
+    [6] = {r = 238, g = 130, b = 238}
 }
 
 RegisterNUICallback('saveNeon', function(data, cb)
-    local HasChip = QBCore.Functions.HasItem('tunerlaptop')
-    if HasChip then
+    local hasChip = exports.ox_inventory:Search('count', 'tunerlaptop') >= 1
+    if hasChip then
         if not data.rainbowEnabled then
-            local veh = cache.vehicle
-
             if tonumber(data.neonEnabled) == 1 then
-                SetVehicleNeonLightEnabled(veh, 0, true)
-                SetVehicleNeonLightEnabled(veh, 1, true)
-                SetVehicleNeonLightEnabled(veh, 2, true)
-                SetVehicleNeonLightEnabled(veh, 3, true)
+                for i = 0, 3 do
+                    SetVehicleNeonLightEnabled(cache.vehicle, i, true)
+                end
                 data.r = tonumber(data.r)
                 data.g = tonumber(data.g)
                 data.b = tonumber(data.b)
                 if data.r and data.g and data.b then
-                    SetVehicleNeonLightsColour(veh, data.r, data.g, data.b)
+                    SetVehicleNeonLightsColour(cache.vehicle, data.r, data.g, data.b)
                 else
-                    SetVehicleNeonLightsColour(veh, 255, 255, 255)
+                    SetVehicleNeonLightsColour(cache.vehicle, 255, 255, 255)
                 end
-                RainbowNeon = false
+                rainbowNeon = false
             else
-                SetVehicleNeonLightEnabled(veh, 0, false)
-                SetVehicleNeonLightEnabled(veh, 1, false)
-                SetVehicleNeonLightEnabled(veh, 2, false)
-                SetVehicleNeonLightEnabled(veh, 3, false)
-                RainbowNeon = false
+                for i = 0, 3 do
+                    SetVehicleNeonLightEnabled(cache.vehicle, i, false)
+                end
+                rainbowNeon = false
             end
         else
-            local veh = cache.vehicle
-
             if tonumber(data.neonEnabled) == 1 then
-                if not RainbowNeon then
-                    RainbowNeon = true
-                    SetVehicleNeonLightEnabled(veh, 0, true)
-                    SetVehicleNeonLightEnabled(veh, 1, true)
-                    SetVehicleNeonLightEnabled(veh, 2, true)
-                    SetVehicleNeonLightEnabled(veh, 3, true)
+                if not rainbowNeon then
+                    rainbowNeon = true
+                    for i = 0, 3 do
+                        SetVehicleNeonLightEnabled(cache.vehicle, i, true)
+                    end
                     CreateThread(function()
                         while true do
-                            if RainbowNeon then
-                                if (LastRainbowNeonColor + 1) ~= 7 then
-                                    LastRainbowNeonColor = LastRainbowNeonColor + 1
-                                    SetVehicleNeonLightsColour(veh, RainbowNeonColors[LastRainbowNeonColor].r, RainbowNeonColors[LastRainbowNeonColor].g, RainbowNeonColors[LastRainbowNeonColor].b)
+                            if rainbowNeon then
+                                if (lastRainbowNeonColor + 1) ~= 7 then
+                                    lastRainbowNeonColor = lastRainbowNeonColor + 1
+                                    SetVehicleNeonLightsColour(cache.vehicle, rainbowNeonColors[lastRainbowNeonColor].r, rainbowNeonColors[lastRainbowNeonColor].g, rainbowNeonColors[lastRainbowNeonColor].b)
                                 else
-                                    LastRainbowNeonColor = 1
-                                    SetVehicleNeonLightsColour(veh, RainbowNeonColors[LastRainbowNeonColor].r, RainbowNeonColors[LastRainbowNeonColor].g, RainbowNeonColors[LastRainbowNeonColor].b)
+                                    lastRainbowNeonColor = 1
+                                    SetVehicleNeonLightsColour(cache.vehicle, rainbowNeonColors[lastRainbowNeonColor].r, rainbowNeonColors[lastRainbowNeonColor].g, rainbowNeonColors[lastRainbowNeonColor].b)
                                 end
                             else
                                 break
@@ -187,39 +153,35 @@ RegisterNUICallback('saveNeon', function(data, cb)
                     end)
                 end
             else
-                RainbowNeon = false
-                SetVehicleNeonLightEnabled(veh, 0, false)
-                SetVehicleNeonLightEnabled(veh, 1, false)
-                SetVehicleNeonLightEnabled(veh, 2, false)
-                SetVehicleNeonLightEnabled(veh, 3, false)
+                rainbowNeon = false
+                for i = 0, 3 do
+                    SetVehicleNeonLightEnabled(cache.vehicle, i, false)
+                end
             end
         end
     end
     cb('ok')
 end)
 
-local RainbowHeadlight = false
-local RainbowHeadlightValue = 0
+local rainbowHeadlight = false
+local rainbowHeadlightValue = 0
 
 RegisterNUICallback('saveHeadlights', function(data, cb)
-    local HasChip = QBCore.Functions.HasItem('tunerlaptop')
-    if HasChip then
+    local hasChip = exports.ox_inventory:Search('count', 'tunerlaptop') >= 1
+    if hasChip then
         if data.rainbowEnabled then
-            RainbowHeadlight = true
-            local veh = cache.vehicle
-            local value = tonumber(data.value)
-
+            rainbowHeadlight = true
             CreateThread(function()
                 while true do
-                    if RainbowHeadlight then
-                        if (RainbowHeadlightValue + 1) ~= 12 then
-                            RainbowHeadlightValue = RainbowHeadlightValue + 1
-                            ToggleVehicleMod(veh, 22, true)
-                            SetVehicleHeadlightsColour(veh, RainbowHeadlightValue)
+                    if rainbowHeadlight then
+                        if (rainbowHeadlightValue + 1) ~= 12 then
+                            rainbowHeadlightValue = rainbowHeadlightValue + 1
+                            ToggleVehicleMod(cache.vehicle, 22, true)
+                            SetVehicleHeadlightsColour(cache.vehicle, rainbowHeadlightValue)
                         else
-                            RainbowHeadlightValue = 1
-                            ToggleVehicleMod(veh, 22, true)
-                            SetVehicleHeadlightsColour(veh, RainbowHeadlightValue)
+                            rainbowHeadlightValue = 1
+                            ToggleVehicleMod(cache.vehicle, 22, true)
+                            SetVehicleHeadlightsColour(cache.vehicle, rainbowHeadlightValue)
                         end
                     else
                         break
@@ -227,15 +189,14 @@ RegisterNUICallback('saveHeadlights', function(data, cb)
                     Wait(300)
                 end
             end)
-            ToggleVehicleMod(veh, 22, true)
-            SetVehicleHeadlightsColour(veh, value)
+            ToggleVehicleMod(cache.vehicle, 22, true)
+            SetVehicleHeadlightsColour(cache.vehicle, value)
         else
-            RainbowHeadlight = false
-            local veh = cache.vehicle
+            rainbowHeadlight = false
             local value = tonumber(data.value)
 
-            ToggleVehicleMod(veh, 22, true)
-            SetVehicleHeadlightsColour(veh, value)
+            ToggleVehicleMod(cache.vehicle, 22, true)
+            SetVehicleHeadlightsColour(cache.vehicle, value)
         end
     end
     cb('ok')

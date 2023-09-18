@@ -1,4 +1,3 @@
-local QBCore = exports['qbx-core']:GetCoreObject()
 local tunedVehicles = {}
 local nitrousVehicles = {}
 
@@ -53,9 +52,7 @@ RegisterNetEvent('nitrous:server:StopSync', function(plate)
 end)
 
 RegisterNetEvent('nitrous:server:removeItem', function()
-    local Player = QBCore.Functions.GetPlayer(source)
-
-    if not Player then return end
-
-    Player.Functions.RemoveItem('nitrous', 1)
+    local player = QBCore.Functions.GetPlayer(source)
+    if not player then return end
+    player.Functions.RemoveItem('nitrous', 1)
 end)
