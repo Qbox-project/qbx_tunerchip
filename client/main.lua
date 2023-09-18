@@ -176,7 +176,7 @@ RegisterNUICallback('saveHeadlights', function(data, cb)
                 while true do
                     if rainbowHeadlight then
                         if (rainbowHeadlightValue + 1) ~= 12 then
-                            rainbowHeadlightValue = rainbowHeadlightValue + 1
+                            rainbowHeadlightValue += 1
                             ToggleVehicleMod(cache.vehicle, 22, true)
                             SetVehicleHeadlightsColour(cache.vehicle, rainbowHeadlightValue)
                         else
