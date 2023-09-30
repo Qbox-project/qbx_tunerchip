@@ -1,7 +1,7 @@
 local tunedVehicles = {}
 local nitrousVehicles = {}
 
-QBCore.Functions.CreateUseableItem("tunerlaptop", function(source)
+exports.qbx_core:CreateUseableItem("tunerlaptop", function(source)
     TriggerClientEvent('qb-tunerchip:client:openChip', source)
 end)
 
@@ -21,7 +21,7 @@ lib.callback.register('qb-tunerchip:server:GetStatus', function(_, plate)
     return tunedVehicles[plate]
 end)
 
-QBCore.Functions.CreateUseableItem("nitrous", function(source)
+exports.qbx_core:CreateUseableItem("nitrous", function(source)
     TriggerClientEvent('smallresource:client:LoadNitrous', source)
 end)
 
