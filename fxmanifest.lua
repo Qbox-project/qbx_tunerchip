@@ -1,7 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'https://github.com/Qbox-project/qbx-tunerchip'
+description 'QBX-Tunerchip'
+repository 'https://github.com/Qbox-project/qbx_tunerchip'
 version '1.0.0'
 
 ui_page 'html/index.html'
