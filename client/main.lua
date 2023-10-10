@@ -26,8 +26,8 @@ RegisterNUICallback('save', function(data, cb)
     local hasChip = exports.ox_inventory:Search('count', 'tunerlaptop') >= 1
     if hasChip then
         setVehData(cache.vehicle, data)
-        QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_tuned"), 'error')
-        TriggerServerEvent('qb-tunerchip:server:TuneStatus', QBCore.Functions.GetPlate(cache.vehicle), true)
+        exports.qbx_core:Notify(Lang:t("error.tunerchip_vehicle_tuned"), 'error')
+        TriggerServerEvent('qb-tunerchip:server:TuneStatus', GetPlate(cache.vehicle), true)
     end
     cb('ok')
 end)
@@ -40,22 +40,22 @@ RegisterNetEvent('qb-tunerchip:client:TuneStatus', function()
     if vehModel ~= 0 then
         local status = lib.callback.await('qb-tunerchip:server:GetStatus', false, plate)
         if status then
-            QBCore.Functions.Notify(Lang:t("success.this_vehicle_has_been_tuned"), 'success')
+            exports.qbx_core:Notify(Lang:t("success.this_vehicle_has_been_tuned"), 'success')
         else
-            QBCore.Functions.Notify(Lang:t("error.this_vehicle_has_not_been_tuned"), 'error')
+            exports.qbx_core:Notify(Lang:t("error.this_vehicle_has_not_been_tuned"), 'error')
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.no_vehicle_nearby"), 'error')
+        exports.qbx_core:Notify(Lang:t("error.no_vehicle_nearby"), 'error')
     end
 end)
 
 RegisterNUICallback('checkItem', function(data, cb)
-    cb(QBCore.Functions.HasItem(data.item))
+    cb(exports.ox_inventory:Search('count', data.item) >= 1)
 end)
 
 RegisterNUICallback('reset', function(_, cb)
     resetVeh(cache.vehicle)
-    QBCore.Functions.Notify(Lang:t("error.tunerchip_vehicle_has_been_reset"), 'error')
+    exports.qbx_core:Notify(Lang:t("error.tunerchip_vehicle_has_been_reset"), 'error')
     cb("ok")
 end)
 
@@ -80,10 +80,10 @@ RegisterNetEvent('qb-tunerchip:client:openChip', function()
         }) then
             openTunerLaptop(true)
         else
-            QBCore.Functions.Notify(Lang:t("error.canceled"), "error")
+            exports.qbx_core:Notify(Lang:t("error.canceled"), "error")
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.you_are_not_in_a_vehicle"), "error")
+        exports.qbx_core:Notify(Lang:t("error.you_are_not_in_a_vehicle"), "error")
     end
 end)
 

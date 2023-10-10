@@ -24,20 +24,20 @@ RegisterNetEvent('smallresource:client:LoadNitrous', function()
                         combat = true
                     }
                 }) then
-                    TriggerEvent("inventory:client:ItemBox", QBCore.Shared.Items['nitrous'], "remove")
+                    TriggerEvent("inventory:client:ItemBox", exports.ox_inventory:Items()['nitrous'], "remove")
                     TriggerServerEvent("nitrous:server:removeItem")
                     local currentVehicle = cache.vehicle
                     local Plate = GetPlate(currentVehicle)
                     TriggerServerEvent('nitrous:server:LoadNitrous', Plate)
                 end
             else
-                QBCore.Functions.Notify(Lang:t("error.you_cannot_do_that_from_this_seat"), "error")
+                exports.qbx_core:Notify(Lang:t("error.you_cannot_do_that_from_this_seat"), "error")
             end
         else
-            QBCore.Functions.Notify(Lang:t("error.you_are_not_in_a_vehicle"), 'error')
+            exports.qbx_core:Notify(Lang:t("error.you_are_not_in_a_vehicle"), 'error')
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.you_already_have_nos_active"), 'error')
+        exports.qbx_core:Notify(Lang:t("error.you_already_have_nos_active"), 'error')
     end
 end)
 

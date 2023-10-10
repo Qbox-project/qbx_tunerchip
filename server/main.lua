@@ -52,7 +52,7 @@ RegisterNetEvent('nitrous:server:StopSync', function(plate)
 end)
 
 RegisterNetEvent('nitrous:server:removeItem', function()
-    local player = QBCore.Functions.GetPlayer(source)
+    local player = exports.qbx_core:GetPlayer(source)
     if not player then return end
     player.Functions.RemoveItem('nitrous', 1)
 end)
